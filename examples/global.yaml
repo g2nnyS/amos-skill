@@ -1,58 +1,139 @@
-# 全局策略示例（完整文档）。先 POST /api/projects/global/import 提交 {"yaml":"..."}，
-# 再用响应中的 candidate 提交提案或校验；直接把本文档作为 {yaml} 提交给
-# /proposals 或 /validate 不会保留 injection。
+# 全局策略示例（完整文档 amos-project-policy v1）。
 #
-# 全局省略 project 绑定，可导入内置 global 项目；规则只比较规范化路径，
-# 不读取文件内容，也不提供 OS 隔离。
+# 机器盘点（仅摘要，不作为规则条件）：Linux + bash；git；Node.js 26/npm；
+# python3/go；Pi、OpenCode、Claude；GitHub 与外部 MCP。规则不写主机名、
+# 用户名或绝对 home 路径。
+#
+# 分层：硬层只有 1 条 deterministic confirm（**/AGENTS.md 的直接 file_write，
+# 假设已获用户明确许可）；其余 5 条为 advisory_only 建议，只进入 guidance
+# 投影，不产生引擎裁决。
+#
+# 使用：先 POST /api/projects/global/import 提交 {"yaml":"..."}，再用响应中的
+# candidate 提交提案或校验；直接把本文档作为 {yaml} 提交给 /proposals 或
+# /validate 不会保留 injection。
 
 format: amos-project-policy
 version: 1
 
 activation:
   includedRuleIds:
-    - portable-credential-read-deny
-    - portable-engineering-baseline
+    - global-agents-md-write-confirm
+    - global-verify-repo-checks
+    - global-comments-zh
+    - global-session-workspace-tools
+    - global-ai-tooling-change-guidance
+    - global-external-connection-change
   excludedRuleIds: []
 
 injection:
   baselineRuleIds:
-    - portable-engineering-baseline
+    - global-verify-repo-checks
+    - global-comments-zh
+    - global-session-workspace-tools
+    - global-ai-tooling-change-guidance
+    - global-external-connection-change
   routes: []
 
 rules:
-  - id: portable-credential-read-deny
-    dimension: credential
-    level: 0
+  # --- 硬层：直接写入 AGENTS.md 进入 confirm ---
+  - id: global-agents-md-write-confirm
+    dimension: filesystem
+    level: 1
     expressivity: deterministic
     policy_class: security
     enforcement: runtime
     predicate:
       - op: op_in
         args:
-          operations: [file_read]
+          operations: [file_write]
       - op: target_glob
         args:
           patterns:
-            - "**/.netrc"
-    narrative: "file_read 命中任意层级的 .netrc 时拒绝，避免读取其中可能存在的登录凭据；规则只比较路径。"
-    on_hit: deny
+            - "**/AGENTS.md"
+    narrative: "直接 file_write 任意层级的 AGENTS.md 时进入 confirm；该动作可能改变所有 Agent 的项目指令，确认由宿主审批流程处理。"
+    on_hit: confirm
     scope: project
     ttl: null
     owner: agent
     source: null
-    probe: "普通读取示例：file_read /home/example/.netrc 命中并得到 deny；读取 /home/example/.netrc.bak 不命中。"
+    probe: "普通写入示例：file_write /home/example/project/AGENTS.md 命中并得到 confirm；写 /home/example/project/AGENTS.md.bak 不命中。"
 
-  - id: portable-engineering-baseline
-    dimension: delivery
+  # --- 建议层：改动后执行仓库约定检查 ---
+  - id: global-verify-repo-checks
+    dimension: verification
     level: 2
     expressivity: advisory_only
     policy_class: engineering
     enforcement: advisory
     predicate: null
-    narrative: "依赖与工具链保持显式版本和锁文件，凭据通过环境变量或密钥引用注入；该条只作为开发建议进入 guidance 投影。"
+    narrative: "修改后运行仓库约定的检查（如 npm run typecheck、npm test 或项目自带脚本），交付列出实际命令、结果和跳过原因。"
     on_hit: log
     scope: project
     ttl: null
     owner: agent
     source: null
-    probe: "普通建议：在贡献说明中写明安装使用锁文件，不写真实凭据或内网地址。"
+    probe: "普通建议：提交前先运行 typecheck 与测试，再在摘要中写明已运行项。"
+
+  # --- 建议层：注释与说明保持中文 ---
+  - id: global-comments-zh
+    dimension: documentation
+    level: 2
+    expressivity: advisory_only
+    policy_class: engineering
+    enforcement: advisory
+    predicate: null
+    narrative: "代码注释与仓库内说明保持中文，外部术语可保留原文；注释改动随对应代码提交，不为统一措辞重排无关文件。"
+    on_hit: log
+    scope: project
+    ttl: null
+    owner: agent
+    source: null
+    probe: "普通建议：新增函数用中文注释说明输入与失败路径。"
+
+  # --- 建议层：文件动作与宿主覆盖范围 ---
+  - id: global-session-workspace-tools
+    dimension: filesystem
+    level: 2
+    expressivity: advisory_only
+    policy_class: security
+    enforcement: advisory
+    predicate: null
+    narrative: "文件类动作应保持在适配器提供的 session workspace 内；本建议只覆盖文件路径提示，Shell、MCP 与宿主原生写入由各自宿主策略处理。"
+    on_hit: log
+    scope: project
+    ttl: null
+    owner: agent
+    source: null
+    probe: "普通建议：读取仓库文件时确认目标在会话工作区内，跨目录访问先说明理由。"
+
+  # --- 建议层：本机 AI 工具配置变更 ---
+  - id: global-ai-tooling-change-guidance
+    dimension: tooling
+    level: 2
+    expressivity: advisory_only
+    policy_class: security
+    enforcement: advisory
+    predicate: null
+    narrative: "在用户机器上安装或修改插件、MCP 服务、skills 或 AI 工具设置前先确认；记录变更范围和回滚方式。"
+    on_hit: log
+    scope: project
+    ttl: null
+    owner: agent
+    source: null
+    probe: "普通建议：启用新的 MCP 服务前先向用户说明它将读取的目录和网络端点。"
+
+  # --- 建议层：外部连接与凭据配置变更 ---
+  - id: global-external-connection-change
+    dimension: connectivity
+    level: 2
+    expressivity: advisory_only
+    policy_class: security
+    enforcement: advisory
+    predicate: null
+    narrative: "变更 GitHub 认证、外部 MCP 端点或 API key 配置前先确认；说明影响范围、凭据来源和撤销方式。"
+    on_hit: log
+    scope: project
+    ttl: null
+    owner: agent
+    source: null
+    probe: "普通建议：替换 GitHub token 前确认新 token 的权限范围与过期时间。"

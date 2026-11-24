@@ -228,8 +228,9 @@ Agents **only**:
 | **references/authoring.md** | 212 | **Authoritative reference.** Machine contracts (points to external AMOS repo: `constraints/schema.json`, `constraints/vocabulary.md`, `control-plane/document.ts`, `control-plane/compiler.ts`), operator argument tables, project-survey checklist, two complete Node.js verification scripts (online §4, offline §5), delivery checklist (§6). |
 | **examples/global.yaml** | — | Complete global baseline policy example: `format`, `version`, `activation` (explicit `includedRuleIds`), `injection`, 2 canonical rules (deterministic deny + advisory). |
 | **examples/project.yaml** | — | Complete project supplementary policy example: `${SESSION_WORKSPACE}` globs, `injection.routes` with `pathHint`/`add`/`suppress`/`specificity`. |
-| **evals/global-write/** | — | Eval case: author a new global baseline. Contains `case.yaml` (schema_version 1.1, expected_outcome), `prompt.md` (frontmatter: `tags: [skill-creator]`, `max_turns: 20`, `timeout_seconds: 600`, `allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Bash]`), and 2 LLM graders (`type: llm, focus: trace, weight: 1`). |
+| **evals/global-write/** | — | Eval case: author a new global baseline. Contains `case.yaml` (schema_version 1.1, expected_outcome), `prompt.md` (enhanced with real project-amos repo scanning, mapping table, 10+ rules, 2+ rule simulations), and 7 LLM graders (document validity, inventory & secrets, hard-rule scope, project separation, positive/negative matching, injection consistency, hard/advisory selection). Reference: `docs/global-baseline-generation.md`. |
 | **evals/project-ledgers/** | — | Eval case: edit project supplementary rules. Same structure, 3 graders (document validity, scope matching, advisory correctness). |
+| **docs/global-baseline-generation.md** | — | **Complete step-by-step guide** for authoring a new global baseline from scratch: environment setup, project-amos repo scanning, operation mapping, 10+ rules with evidence, import/simulate verification, boundary report. 8 detailed sections with examples and validation scripts. |
 
 ---
 
@@ -277,7 +278,7 @@ Two structured eval scenarios (not executable harnesses):
 
 | Path | Purpose | Schema | Graders |
 |------|---------|--------|---------|
-| `evals/global-write/` | Author a new global baseline policy | `case.yaml` schema_version 1.1 | 2 LLM graders: document validity, scope coverage |
+| `evals/global-write/` | Author a new global baseline policy | `case.yaml` schema_version 1.1 | 7 LLM graders: document validity, inventory, hard-rule scope, project separation, matching, injection, selection |
 | `evals/project-ledgers/` | Edit existing project supplementary rules | `case.yaml` schema_version 1.1 | 3 LLM graders: document validity, scope coverage, advisory-only rules |
 
 Each eval case contains:

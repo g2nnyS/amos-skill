@@ -56,14 +56,60 @@ rules:
 - 无命中默认值由调用方决定，不要依赖“无命中即 allow”。多规则命中时按 `deny > confirm > log > allow`。
 - `advisory_only` 不产生裁决，只进入 narrative 投影。`level` 不改变裁决；`scope` 只是审计元数据。
 
-## 3. 项目调研清单
+## 3. 只读调研
 
-1. **真实动作**：读 AMOS 的 `adapters/pi/normalize.ts`、`adapters/opencode-v2/normalize.ts`、`host/contracts.ts`，确认 operation 和 target 形状。
-2. **仓库约定**：只读 `AGENTS.md`、`CONTRIBUTING.md`、`README`、清单与相关目录；用 `glob`/`grep` 定位，避免整树转储。
-3. **风险面**：凭据、版本库元数据、发布文件、生成目录、工作区边界。只记录路径和约定，不读秘密内容。
-4. **需求与数据分开**：已批准需求决定是否要规则；仓库文件只证明动作范围和风险。没有证据的约束写成 `advisory_only`。
-5. **映射**：每条规则写成“依据 → operation + target → 判定/建议 → 正反例”。
-6. **原稿**：编辑指定草稿时读取该文件；修改已发布策略时从 `GET /api/projects/:id/policy` 取得版本，再从 `GET /api/projects/:id/versions/:n/export?format=yaml` 取得完整 YAML。
+### 3.1 本机盘点（全局目标）
+
+全局基线先了解运行环境，只读、只采样与任务相关的部分：
+
+```bash
+uname -s
+uname -m
+command -v node npm git rg docker python3 2>/dev/null || true
+node --version 2>/dev/null || true
+```
+
+- skills：只列客户端 skill 根下的目录名，例如存在时 `ls -1 "$HOME/.claude/skills"`；不要批量读取 skill 内容。
+- agent settings：只检查 hook、plugin、MCP 的文件名、顶层键、服务名和启用状态。**不要 `cat` 整个配置，不读取、输出或复制 `apiKey`、`token`、`env` 等 secret 值**；只记录键名和计数。
+- 把 OS/arch、工具存在性、skills 名称、设置结构写进 `inventory.md`，标 present/absent。检测到工具只说明“已见”，不自动生成禁令。
+
+### 3.2 仓库与固定目录
+
+- 读当前仓库的 `AGENTS.md`、`CONTRIBUTING.md`、`README*`、包/构建清单，以及 `.github/`、`docs/`、`scripts/` 等固定目录中与任务相关的文件。
+- 全局目标：这些只是共通约定样本，不等价于项目全部约定。只把跨仓库共通的路径/动作写进全局；项目专属目录、语言、发布流程写项目层，并写进 `boundary-report.md`。
+- 项目目标：以已发布策略和该项目仓库约定为准，不把仓库数据自动当成已批准规则。
+
+### 3.3 真实动作
+
+读 AMOS 的 `adapters/pi/normalize.ts`、`adapters/opencode-v2/normalize.ts`、`host/contracts.ts`，确认 operation 和 target 形状；只有真实发出的 operation 才写成硬规则。
+
+### 3.4 证据、采样与优先级
+
+每条规则写成“依据 → operation + target → 判定/建议 → 正反例”。
+
+- 只采样与任务相关的工具/路径/约定；其余记为“已见，不据此设规则”。
+- 优先级：明确用户需求或已采用约定 > 仓库固定文件 > 机器探测；冲突时报告，不静默取更严。
+- 已批准需求决定是否要规则；仓库文件只证明动作范围和风险。没有证据的约束写 `advisory_only`。
+
+### 3.5 原稿与 seed
+
+编辑指定草稿时读取该文件；修改已发布策略时：
+
+- `GET /api/projects/:id/policy` 取当前版本；
+- `GET /api/projects/:id/versions/:n/export?format=yaml` 取完整 YAML；
+- `GET /api/seed` 只是仓库 seed candidate，不是全部已发布策略，不能替代当前版本。
+
+### 3.6 硬规则选择流程
+
+| 条件 | 结果 |
+| --- | --- |
+| 没有明确需求或已采用约定 | 只写 `advisory_only` |
+| 不是跨仓库共通路径/动作 | 写项目层，并记录到 `boundary-report.md` |
+| 不是当前真实 operation | 写建议 |
+| 不能用窄 predicate 表达，或给不出正反例 | 写建议 |
+| 以上都满足 | 写窄 `deny`/`confirm`/`log`，只覆盖明确列出的范围 |
+
+探测到的工具、MCP、Shell、联网、进程执行不自动变成硬规则；这些通道优先写建议。不要用宽泛黑名单宣称覆盖完整；allow 列表只列探测并模拟验证过的路径。
 
 ## 4. 线上验证：Node 26 内存 fetch
 
@@ -207,11 +253,14 @@ JS
 
 ## 6. 交付检查单
 
-- [ ] 目标明确；编辑任务已取得已发布原稿。
+- [ ] 目标明确；编辑任务已取得草稿或已发布原稿。
+- [ ] `inventory.md`、`policy.yaml`、`boundary-report.md` 同时存在；盘点不含 secret 值。
 - [ ] 完整文档；无拼接、`...`、TODO。
 - [ ] 新增 ID 已进入显式 include；删除 ID 已从 excluded、baseline、route add/suppress 清理。
 - [ ] 未改规则保持原顺序与字段；`activation`、`injection` 未被重置。
-- [ ] 硬规则只用当前真实 operation；Shell/HTTP/内容约束写成建议。
+- [ ] 硬规则只用当前真实 operation；Shell/HTTP/MCP/进程约束写成建议。
+- [ ] hard rule 只覆盖明确要求/共通路径；项目专属约定留在项目层。
+- [ ] allow 列表只列探测并验证过的路径；没有用宽黑名单宣称完整。
 - [ ] 全局草案不含本机路径，推荐不用 `${SESSION_WORKSPACE}`。
 - [ ] 线上或离线验证结果已记录；未运行项已标记。
 - [ ] 未审批、未发布、未改数据库或激活产物。
