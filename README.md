@@ -19,15 +19,7 @@
 
 **从零生成全局基线：**
 
-详见 [`docs/global-baseline-generation.md`](docs/global-baseline-generation.md) 的完整步骤：
-- 第 0-1 步：环境准备与本机盘点（OS/arch、工具版本、skills 目录结构）
-- 第 2 步：扫描 project-amos 仓库——提取真实的 operation 映射、现有规则、治理约定
-- 第 3 步：建立映射表（依据 → operation → 判定 → 正反例）
-- 第 4 步：编写 policy.yaml（14 个必填字段，source 出处或 null）
-- 第 5-6 步：导入验证与模拟测试（至少 2 条规则各有完整正反例）
-- 第 7 步：编写 boundary-report.md（规则总结、验证结果、缺口说明）
-
-交付：`policy.yaml`（完整可导入）+ `boundary-report.md`（依据和缺口）+ `inventory.md`（环境盘点，可选）。仅生成与导入验证；不提交提案，不发布。
+> 使用 amos-skill 从零生成全局基线。只读盘点本机 OS/arch、相关工具、skills 与 agent settings 的 hook/plugin/MCP 结构，不读取或输出 secret 值；读当前仓库 AGENTS/CONTRIBUTING/README 与固定目录作为共通约定样本。以明确需求和已采用约定为准，不因检测到工具自动禁令；全局只放共通路径/动作，项目专属写项目层。交付 `inventory.md`、`policy.yaml`、`boundary-report.md`，只对明确要求的 `.git/config` 直接写入加一个窄 confirm 硬规则；读取不触发；给正反例。只生成草案，不提交提案。
 
 **编辑项目规则：**
 

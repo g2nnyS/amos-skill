@@ -1,7 +1,7 @@
-# Pull request checklist
+# Pull request 清单
 
-- [ ] Tests pass.
-- [ ] Release notes updated when needed.
-- [ ] No generated output or secrets committed.
+- [ ] 测试通过。
+- [ ] 需要时更新发布说明。
+- [ ] 没有提交生成物或 secret。
 
-This checklist is project-specific fixture data.
+该清单是项目专属 fixture 数据。

@@ -1,8 +1,8 @@
-# Contributing
+# 贡献说明
 
-- Update `docs/releases/` for user-visible changes.
-- Do not edit `dist/` or other generated output.
-- Run the repository checks before opening a pull request.
-- Release notes and PR checklist are project-specific conventions.
+- 用户可见改动同步更新 `docs/releases/`。
+- 不直接编辑 `dist/` 或其他生成物。
+- 提交评审前运行仓库检查。
+- 发布说明和 PR 清单属于项目专属约定。
 
-This file is fixture data. It is not a published AMOS policy.
+本文件是 fixture 数据，不是已发布的 AMOS 策略。

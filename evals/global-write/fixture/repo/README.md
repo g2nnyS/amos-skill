@@ -1,3 +1,3 @@
-# Sample project
+# 示例项目
 
-A synthetic repository used by the `global-write` eval to demonstrate how a global baseline should distinguish common conventions from project-specific ones.
+这是 `global-write` eval 使用的合成仓库，用来说明全局基线应如何区分共通约定与项目专属约定。

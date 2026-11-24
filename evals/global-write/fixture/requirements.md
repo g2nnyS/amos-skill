@@ -1,8 +1,8 @@
-# User requirements (synthetic)
+# 用户需求（合成）
 
-1. In the global baseline, direct `file_write` to `.git/config` in any repository requires `confirm`; `file_read` must not trigger it. Rule ID: `global-git-config-write`.
-2. Do not add hard rules just because the inventory found docker, MCP servers, shell, network access, or process execution. Those are advisory notes for this fixture.
-3. The global layer contains only common paths/actions. Project-specific conventions such as `docs/releases/`, `.github/`, release notes, and the project test workflow belong to the project layer, not the global hard rules.
-4. Deliver three files: `inventory.md` (non-secret), `policy.yaml` (complete document), and `boundary-report.md` (scope and verification report). Do not submit a proposal.
+1. 全局基线中，任何仓库直接 `file_write` 到 `.git/config` 都需要 `confirm`；`file_read` 不得触发。规则 ID：`global-git-config-write`。
+2. 不要因为盘点发现 docker、MCP、Shell、联网或进程执行就新增硬规则；这些在本 fixture 中写建议。
+3. 全局层只放共通路径/动作。项目专属约定（如 `docs/releases/`、`.github/`、发布说明、项目测试流程）属于项目层，不进入全局硬规则。
+4. 交付三份文件：`inventory.md`（非秘密）、`policy.yaml`（完整文档）、`boundary-report.md`（边界与验证报告）。不要提交提案。
 
-This is the only explicit request for a global hard rule in this fixture.
+这是本 fixture 中唯一的全局硬规则明确需求。

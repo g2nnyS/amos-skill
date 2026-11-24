@@ -1,16 +1,16 @@
-# Synthetic machine inventory
+# 合成机器盘点
 
-- OS: Linux (fixture)
-- arch: x86_64
-- shell: bash
-- tools present: node 26.x, npm, git, rg, docker, python3
-- user skills: example-skill under `fixture/home/.claude/skills/`
-- agent settings: `fixture/home/.config/agent/settings.json`
+- OS：Linux（fixture）
+- 架构：x86_64
+- Shell：bash
+- 已见工具：node 26.x、npm、git、rg、docker、python3
+- 用户 skills：`fixture/home/.claude/skills/` 下的 example-skill
+- Agent settings：`fixture/home/.config/agent/settings.json`
 
-Settings structure only:
+只记录结构：
 
-- hooks: `preToolUse`, `postToolUse`
-- plugins: one enabled fixture plugin
-- mcpServers: `filesystem`, `github`
+- hooks：`preToolUse`、`postToolUse`
+- plugins：一个启用的 fixture 插件
+- mcpServers：`filesystem`、`github`
 
-The settings file contains placeholder secret fields. Read structure and key names only; never read, copy, or emit their values.
+settings 文件含占位 secret 字段。只读取结构和键名，不读取、复制或输出它们的值。

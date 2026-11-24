@@ -1,10 +1,10 @@
-# Sample repository guidelines
+# 示例仓库约定
 
-- Use Node.js 26, npm, and strict TypeScript ESM. Run tests before review.
-- Never commit generated `dist/` output, credentials, or local settings.
-- Release-affecting changes require human review.
-- Directly writing `.git/config` requires explicit human confirmation; reading it is allowed.
-- Project-specific release notes live in `docs/releases/` and follow `CONTRIBUTING.md`.
-- Shell commands use bash; do not add undocumented wrappers.
+- 使用 Node.js 26、npm 和严格 TypeScript ESM；评审前运行测试。
+- 不提交生成的 `dist/`、凭据或本地设置。
+- 影响发布的改动需要人工评审。
+- 直接写入 `.git/config` 需要明确的人工确认；读取允许。
+- 项目专属发布说明放在 `docs/releases/`，流程见 `CONTRIBUTING.md`。
+- Shell 使用 bash；不要增加未说明的包装脚本。
 
-These are samples of conventions a global baseline may learn from. They do not authorize copying every project-specific rule into the global layer.
+这些是全局基线可以参考的约定样本，不表示可以把所有项目专属规则复制进全局层。

@@ -7,7 +7,7 @@ allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Bash]
 
 你在合成环境中为 AMOS 内置 `global` 项目从零生成一份全局基线。只读使用 `evals/global-write/fixture/`：
 
-- `machine.md`、`home/`：盘点 OS/arch、相关工具、skills 和 agent settings 的 hook/plugin/MCP 结构。只看键名和结构，**绝不读取、复制或输出** `apiKey`、`token`、`env` 等 secret 值。
+- `machine.md`、`home/`：盘点 OS/arch、相关工具、skills 和 agent settings 的 hook/plugin/MCP 结构。结构优先使用 `machine.md` 的摘要；若检查 settings 文件，只列键名/服务名/启用状态，**绝不读取、复制或输出** `apiKey`、`token`、`env` 等 secret 值。
 - `repo/`：读取 `AGENTS.md`、`CONTRIBUTING.md`、`README.md`、`docs/releases/`、`.github/`，区分共通约定与项目专属约定。
 - `requirements.md`、`selection.md`、`expected-actions.md`：本次明确需求、hard-rule 选择流程和正反例。
 

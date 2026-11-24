@@ -1,3 +1,3 @@
-# Release notes
+# 发布说明
 
-Project-specific release notes belong here. Do not promote this directory convention into the global baseline as a hard rule.
+项目专属发布说明放在这里。不要把该目录约定提升为全局硬规则。
