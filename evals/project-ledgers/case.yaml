@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: project-ledgers
+expected_outcome: |
+  项目策略将真实目录的写入条件与工程建议分开；整份文件可移植且通过控制面校验。

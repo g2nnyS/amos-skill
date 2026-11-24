@@ -1,0 +1,58 @@
+# 全局策略示例（完整文档）。先 POST /api/projects/global/import 提交 {"yaml":"..."}，
+# 再用响应中的 candidate 提交提案或校验；直接把本文档作为 {yaml} 提交给
+# /proposals 或 /validate 不会保留 injection。
+#
+# 全局省略 project 绑定，可导入内置 global 项目；规则只比较规范化路径，
+# 不读取文件内容，也不提供 OS 隔离。
+
+format: amos-project-policy
+version: 1
+
+activation:
+  includedRuleIds:
+    - portable-credential-read-deny
+    - portable-engineering-baseline
+  excludedRuleIds: []
+
+injection:
+  baselineRuleIds:
+    - portable-engineering-baseline
+  routes: []
+
+rules:
+  - id: portable-credential-read-deny
+    dimension: credential
+    level: 0
+    expressivity: deterministic
+    policy_class: security
+    enforcement: runtime
+    predicate:
+      - op: op_in
+        args:
+          operations: [file_read]
+      - op: target_glob
+        args:
+          patterns:
+            - "**/.netrc"
+    narrative: "file_read 命中任意层级的 .netrc 时拒绝，避免读取其中可能存在的登录凭据；规则只比较路径。"
+    on_hit: deny
+    scope: project
+    ttl: null
+    owner: agent
+    source: null
+    probe: "普通读取示例：file_read /home/example/.netrc 命中并得到 deny；读取 /home/example/.netrc.bak 不命中。"
+
+  - id: portable-engineering-baseline
+    dimension: delivery
+    level: 2
+    expressivity: advisory_only
+    policy_class: engineering
+    enforcement: advisory
+    predicate: null
+    narrative: "依赖与工具链保持显式版本和锁文件，凭据通过环境变量或密钥引用注入；该条只作为开发建议进入 guidance 投影。"
+    on_hit: log
+    scope: project
+    ttl: null
+    owner: agent
+    source: null
+    probe: "普通建议：在贡献说明中写明安装使用锁文件，不写真实凭据或内网地址。"

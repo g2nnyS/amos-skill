@@ -1,0 +1,122 @@
+---
+name: amos-skill
+description: 为 AMOS 治理控制台编写可导入的全局基线或项目规则 YAML 草案，或安全地编辑既有策略。用于生成/修改 AMOS policy.yaml、规则、激活选择与注入配置，并完成导入校验、动作模拟和人工发布交接。
+---
+
+# AMOS 规则 YAML 编写
+
+产物是一份**完整、可导入的 `policy.yaml` 草案**。全局基线交给内置 `global` 项目；仓库规则作为工作区项目的补充规则。草案只用于导入、审阅和模拟；运行期权威是人工批准的已发布版本。
+
+从[全局示例](examples/global.yaml)或[项目示例](examples/project.yaml)选一个起点，不要拼接。[编写参考](references/authoring.md)列出算子参数、在线模拟和离线校验命令；服务可用时，以 `GET /api/schema` 返回的规则表契约为准。
+
+## 开始前确认
+
+1. **目标**：内置 `global`，还是某个工作区项目 ID。
+2. **现状**：新建、编辑指定的草稿文件，还是修改已发布策略？第二种以用户指定的文件为原稿；第三种先导出已发布版本。不要用仓库现状或示例重建缺失的原稿。
+3. **授权**：默认只产出草案并做导入/模拟。只有用户明确授权时才提交提案；审批、发布永远不由 Agent 做。
+
+## 项目调研（只读）
+
+**查真实适配器。** 在 AMOS 检出中确认动作通道：`adapters/pi/normalize.ts`、`adapters/opencode-v2/normalize.ts`、`host/contracts.ts`，以及 `strict/`、`autonomy/` 的实际 operation 映射。只有真实发出的 operation 和目标类型才能写成硬规则。
+
+**扫描约定与风险。** 只读完成任务所需的最少材料：
+
+- `AGENTS.md`、`CONTRIBUTING.md`、`README`、包/构建清单、CI 与相关目录。
+- 先用 `glob`/`grep`/`ls` 定位，再读命中文件；不读 `.env`、私钥、token、凭据文件、含秘密的日志或完整历史转储。
+- 把**已批准需求**与**仓库数据**分开：需求决定要不要规则；代码、配置和文档只提供动作范围与风险证据。二者缺失时写 `advisory_only` 或说明缺口，不用路径猜内容、命令语义、审批状态或生产环境。
+
+**先做映射，再写 YAML。** 每条规则至少填清楚：
+
+| 依据 | 动作 / 精确范围 | 判定 / 建议 | 正反例 |
+| --- | --- | --- | --- |
+| 文件、约定或已确认需求 | operation + target 模式 | `deny`/`confirm`/`log` 或 `advisory_only` | 一个应命中、一个不应命中 |
+
+### 取已有版本
+
+- 当前已发布策略：`GET /api/projects/:id/policy`。
+- 精确导出的完整 YAML：`GET /api/projects/:id/versions/:n/export?format=yaml`；`n` 从 `GET /api/projects/:id/versions` 获取。
+- 导出是编辑基线；保留原规则、顺序、`activation` 与 `injection`。没有导出就把“需要原稿”作为阻塞项返给用户。
+
+## 硬规则与建议规则
+
+硬规则只在动作真实发出时产生效果。当前可可靠匹配：
+
+| operation | 实际来源 |
+| --- | --- |
+| `file_read` | `read` |
+| `file_write` | `write`、`edit`；strict 的 `delete` 与 autonomy 文件创建也走此通道 |
+| `file_search` | `grep`、`find`、`glob` |
+| `file_list` | `ls`、`list` |
+| `file_mkdir` / `file_delete` | managed file host |
+| `shell_input` | 仅 coverage，**不会命中规则** |
+
+`file_stat`、`file_rename`、`file_perm`、`file_link`、`file_truncate`、`http_request` 等可被 Schema 接受，但当前普通适配器不发出；可作为未来基线，现状下是惰性的。保护当前行为只使用上表 operation，不宣称已拦截其余动作。
+
+以下写成 `advisory_only`：工程规范、设计偏好、Shell/网络/文件内容约束、还没有可执行检查点的约定。建议规则固定 `predicate: null`、`enforcement: advisory`，只进入 narrative 注入。
+
+## 文档与字段
+
+完整文档包含 `format: amos-project-policy`、`version: 1`、`activation`、`injection`、`rules`。真实写法直接看 `examples/global.yaml` 与 `examples/project.yaml`，不要在正文复制大段示例。
+
+- 草案省略 `project` 块，保持跨机器可移植；出现时其 `id`/`workspace` 必须与目标一致。
+- `activation.includedRuleIds` 为 `null` 时选中全部已知规则；为数组时只选这些 ID。`excludedRuleIds` 与显式 included 不能重叠。
+- `injection.baselineRuleIds` 和 `injection.routes` 只影响建议投影的选择与排序，不改变裁决。
+- 规则 14 个字段全部必填：`id`、`dimension`、`level`、`expressivity`、`predicate`、`narrative`、`on_hit`、`scope`、`ttl`、`owner`、`source`、`probe`、`policy_class`、`enforcement`。
+- `source` 可为 `null`；填对象时 `repo`、`rev`、`path`、`section`、`lines`、`quote` 都需非空。没有可靠出处用 `null`，不编造，不把秘密或长命令放进 `quote`。
+- `deterministic`：`predicate` 非空，`enforcement` 为 `runtime`/`ci`/`server`。`advisory_only`：`predicate: null`，`enforcement: advisory`。
+- `level` 只影响建议排序/审计优先级；`scope` 只是审计元数据，不筛选规则，也不决定继承。继承由项目绑定与激活集合决定。
+
+## 匹配与判定
+
+七个算子：`op_in`、`target_glob`、`target_outside_glob`、`url_query_key_in`、`target_scheme_in`、`target_host_in`、`target_host_not_in`。`predicate` 数组内逐项 AND，没有 OR、正则或自定义算子。
+
+- 文件 target 必须是规范化绝对路径；引擎不做 realpath、不展开 `~`。
+- `file_search`/`file_list` 的 target 是检索/列举的根路径，不是每个结果文件。
+- `*` 不跨 `/`，`**` 跨层级；`**/.netrc` 命中任意层级的 `.netrc`，不命中 `.netrc.bak`。
+- `${SESSION_WORKSPACE}` 只用于 `target_glob`/`target_outside_glob` 的项目规则。全局项目自身 workspace 为 `/`，全局规则推荐不用该 token；实际组合/模拟按目标项目 workspace 展开。
+- URL 算子要求绝对 URL；把 `op_in` 放第一条，否则 URL 规则遇到文件 action 会让整次评估 fail-closed。
+- `ttl` 为 `null`、`YYYY-MM-DD` 或精确 UTC ISO 时间；到期不参与评估，发布不会清理或续期。
+- 命中多个规则时按 `deny > confirm > log > allow`。重复 ID、空表、未知字段、非法参数或非规范化路径都会 fail-closed。
+
+## 全局与项目
+
+- 全局项目固定 ID `global`，规则继承到所有工作区项目；只写跨仓库可复用的限制，不写某个仓库的目录或绝对路径。
+- 项目候选只保存补充规则。不要复制全局规则；同 ID 不同定义会被拒绝。
+- 生效集合 = 固定基线 ∪ 选中项（全局 + 项目）− 合法排除。项目不能排除固定基线或已激活的全局规则。
+- 全局发布影响所有已发布项目；只提醒人类影响面，不代替发布。
+
+## 编辑既有策略
+
+1. 读取用户指定的草稿，或用 `/policy` 和 `/versions/:n/export?format=yaml` 取已发布原稿；没有原稿就停。
+2. 只改用户指定的规则。其余规则保持原顺序和原字段，`activation` 与 `injection` 一并保留；直接文本编辑时连注释和排版也保留。
+3. 新增规则：显式 `includedRuleIds` 数组要加入新 ID；`null` 会自动选中。新 ID 不得与 `excludedRuleIds` 重叠。
+4. 删除规则：从 `includedRuleIds`、`excludedRuleIds`、`injection.baselineRuleIds`、每条 route 的 `add` 和 `suppress` 清理该 ID，并确保有效集合不为空。
+5. 不改历史版本、不改 ID 既有含义、不把项目规则“升级”成全局规则；改全局规则回 `global` 做。
+6. 只有用户明确授权时才提交提案，body 明确包含 `{ title, rationale, baseVersion, candidate }`；`baseVersion` 取当前版本，首次发布为 `0`，`candidate` 用 `/import` 返回值。
+
+## 验证
+
+完整文档只有一条入口：**先 `/import`，再用返回的 `candidate`**。
+
+1. `POST /api/projects/:id/import`，body `{"yaml":"<完整文档>"}`；它保留 `injection`，返回 `{valid, issues, candidate}`。`valid` 不为 `true` 就停止。
+2. 后续接口都传 `candidate`：
+   - `POST /api/projects/:id/validate`：`{"candidate": <candidate>}`
+   - `POST /api/projects/:id/simulate`：`{"candidate": <candidate>, "action": {...}}`
+3. 至少一个应命中、一个不应命中；核对 `matched_rule_ids` 与 `verdict`。修改既有策略时抽查未改规则，确认激活和注入未被整体改写。
+4. 无服务时可离线调用原生 `parsePolicyDocument` 与 `createRuleValidator` / `validateAndCompileCandidate`，检查完整文档和工作区展开；没有在线固定 catalog / 已发布全局层时，引用其规则 ID 的草案无法完整校验。必须说明未在线导入/模拟。
+
+**不要**把完整文档的裸 `{yaml}` 直接发给 `/validate` 或 `/proposals`：该简写只读 `rules` 和 `activation`，会静默丢掉 `injection`。
+
+## 人工发布界线
+
+- 草案、导入结果、模拟结果都只是验证材料；生效策略来自人工批准的发布版本。
+- Agent 可以读取、校验、模拟；只有明确授权才提交提案。**不得审批、发布、回滚或改数据库/激活产物**。
+- `POST /api/proposals/:id/decision` 是人工操作；`owner: agent` 只表示来源，权限由人工审批决定。
+- 不手改 `.pi/activation.json`、`.pi/amos.json` 或运行回执。发布与重新加载由控制台和宿主完成。
+- 即使已发布，普通适配器仍可能是 `log-only`；只陈述规则和验证结果，不宣称已形成运行期强制或安全边界。
+
+## 输出
+
+- 一份完整 YAML，不拼接多份文档，不留占位符。
+- 列出新增/修改的规则 ID、依据的仓库事实、激活/注入变化、导入与模拟结果、未运行项。
+- 缺少目标、原稿或服务连接时写明缺什么；不用“已生效”“已发布”替代未完成的验证。

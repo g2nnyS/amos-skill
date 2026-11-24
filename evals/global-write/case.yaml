@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: global-write
+expected_outcome: |
+  交付完整、可导入且可移植的全局策略；仅目标文件的直接写入命中指定规则。

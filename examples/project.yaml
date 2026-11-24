@@ -1,0 +1,64 @@
+# 项目策略示例（完整文档）。先 POST /api/projects/:id/import 提交 {"yaml":"..."}，
+# 再用响应中的 candidate 提交提案或校验；直接把本文档作为 {yaml} 提交给
+# /proposals 或 /validate 不会保留 injection。
+#
+# 省略 project 绑定，导入时绑定目标项目；示例假设 amos-skill 技能仓库含
+# SKILL.md 与 examples/。${SESSION_WORKSPACE} 只用于 glob，不做 realpath。
+
+format: amos-project-policy
+version: 1
+
+activation:
+  includedRuleIds:
+    - amos-skill-skill-surface-confirm
+    - amos-skill-example-verification
+  excludedRuleIds: []
+
+injection:
+  baselineRuleIds: []
+  routes:
+    - match:
+        pathHint: "examples/**"
+      add:
+        - amos-skill-example-verification
+      suppress: []
+      specificity: 10
+
+rules:
+  - id: amos-skill-skill-surface-confirm
+    dimension: side_effect
+    level: 1
+    expressivity: deterministic
+    policy_class: security
+    enforcement: runtime
+    predicate:
+      - op: op_in
+        args:
+          operations: [file_write]
+      - op: target_glob
+        args:
+          patterns:
+            - "${SESSION_WORKSPACE}/SKILL.md"
+            - "${SESSION_WORKSPACE}/examples/**"
+    narrative: "file_write 到 SKILL.md 或 examples/ 下任意文件时进入 confirm 裁决；确认结果由宿主审批流程处理，规则本身不授予执行。"
+    on_hit: confirm
+    scope: project
+    ttl: null
+    owner: agent
+    source: null
+    probe: "普通写入示例：file_write /home/example/amos-skill/examples/global.yaml 命中并得到 confirm；读取同一文件不命中本规则。"
+
+  - id: amos-skill-example-verification
+    dimension: verification
+    level: 2
+    expressivity: advisory_only
+    policy_class: engineering
+    enforcement: advisory
+    predicate: null
+    narrative: "示例改动应给出可复现的校验入口与预期结果，并同步中文说明；该条只作为开发建议，由 examples/** 路由注入。"
+    on_hit: log
+    scope: project
+    ttl: null
+    owner: agent
+    source: null
+    probe: "普通建议：在示例旁写明运行命令和预期输出，区分已运行与未运行。"
