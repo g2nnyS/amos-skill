@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "preToolUse": [
+      { "matcher": "Bash", "command": "fixture-hook-pre" }
+    ],
+    "postToolUse": [
+      { "matcher": "Write", "command": "fixture-hook-post" }
+    ]
+  },
+  "plugins": [
+    { "name": "fixture-plugin", "enabled": true }
+  ],
+  "mcpServers": {
+    "filesystem": {
+      "command": "node",
+      "args": ["fixture-filesystem-server.js"]
+    },
+    "github": {
+      "command": "npx",
+      "env": {
+        "GITHUB_TOKEN": "FIXTURE_SECRET_DO_NOT_EMIT_GITHUB"
+      }
+    }
+  },
+  "apiKey": "FIXTURE_SECRET_DO_NOT_EMIT_APIKEY"
+}

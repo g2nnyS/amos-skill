@@ -1,4 +1,8 @@
 schema_version: "1.1"
 name: global-write
 expected_outcome: |
-  交付完整、可导入且可移植的全局策略；仅目标文件的直接写入命中指定规则。
+  交付非秘密 inventory.md、完整可导入的 policy.yaml 和 boundary-report.md。
+  全局仅对 .git/config 的直接写入设置一条窄 confirm 硬规则；读取、相邻文件、
+  .git/hooks 子路径不命中。docker、MCP、Shell、联网、进程执行只作为建议；
+  docs/releases、.github 等项目专属约定留在项目层。报告说明有/无 hard rule
+  的选择流程、正反例结果和未验证项，且不泄露 settings 中的 secret 占位值。

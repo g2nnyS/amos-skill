@@ -14,27 +14,46 @@ description: 为 AMOS 治理控制台编写可导入的全局基线或项目规�
 1. **目标**：内置 `global`，还是某个工作区项目 ID。
 2. **现状**：新建、编辑指定的草稿文件，还是修改已发布策略？第二种以用户指定的文件为原稿；第三种先导出已发布版本。不要用仓库现状或示例重建缺失的原稿。
 3. **授权**：默认只产出草案并做导入/模拟。只有用户明确授权时才提交提案；审批、发布永远不由 Agent 做。
+4. **产物**：`inventory.md`（非秘密盘点）、`policy.yaml`（完整文档）、`boundary-report.md`（边界与验证报告）。三份同时交付。
 
-## 项目调研（只读）
+## 只读调研
 
-**查真实适配器。** 在 AMOS 检出中确认动作通道：`adapters/pi/normalize.ts`、`adapters/opencode-v2/normalize.ts`、`host/contracts.ts`，以及 `strict/`、`autonomy/` 的实际 operation 映射。只有真实发出的 operation 和目标类型才能写成硬规则。
+### 本机盘点（全局目标）
 
-**扫描约定与风险。** 只读完成任务所需的最少材料：
+全局目标先了解运行环境，只读、只采样与任务相关的部分：
 
-- `AGENTS.md`、`CONTRIBUTING.md`、`README`、包/构建清单、CI 与相关目录。
-- 先用 `glob`/`grep`/`ls` 定位，再读命中文件；不读 `.env`、私钥、token、凭据文件、含秘密的日志或完整历史转储。
-- 把**已批准需求**与**仓库数据**分开：需求决定要不要规则；代码、配置和文档只提供动作范围与风险证据。二者缺失时写 `advisory_only` 或说明缺口，不用路径猜内容、命令语义、审批状态或生产环境。
+- OS/arch、shell，以及相关工具的版本/存在性：`node`、`npm`、`git`、`rg`、容器、语言运行时等；不要导出整个环境变量表。
+- 用户 skills：只列客户端 skill 根下的目录名，按需再读具体 skill；不要把 skill 内容当系统事实。
+- 已存在的 agent settings：只检查 hook、plugin、MCP 的结构（文件名、顶层键、服务名、启用状态）。**不要读取、打印或复制** `apiKey`、`token`、`env` 等 secret 值；需要时只输出键名和计数。
+- 盘点结果写进 `inventory.md`，标记 present/absent 和“已见但不据此设规则”。检测到工具不等于要禁止或确认它。
 
-**先做映射，再写 YAML。** 每条规则至少填清楚：
+### 仓库与固定目录
+
+- 读当前仓库的 `AGENTS.md`、`CONTRIBUTING.md`、`README*`、包/构建清单，以及 `.github/`、`docs/`、`scripts/` 等固定目录中与任务相关的文件。
+- **全局目标**：这些文件只提供共通约定样本，不等价于项目全部约定。只把跨仓库共通的路径/动作写进全局；项目专属目录、语言、发布流程写项目层，并在 `boundary-report.md` 说明。
+- **项目目标**：以当前已发布策略和该项目仓库约定为准，仍不把仓库数据自动当成已批准规则。
+
+### 真实适配器
+
+在 AMOS 检出中确认动作通道：`adapters/pi/normalize.ts`、`adapters/opencode-v2/normalize.ts`、`host/contracts.ts`，以及 `strict/`、`autonomy/` 的实际 operation 映射。只有真实发出的 operation 和目标类型才能写成硬规则。
+
+### 证据、采样与优先级
+
+先做映射，再写 YAML。每条规则至少填清楚：
 
 | 依据 | 动作 / 精确范围 | 判定 / 建议 | 正反例 |
 | --- | --- | --- | --- |
 | 文件、约定或已确认需求 | operation + target 模式 | `deny`/`confirm`/`log` 或 `advisory_only` | 一个应命中、一个不应命中 |
 
+- 只采样与任务相关的工具/路径/约定；其余记录为“已见，不据此设规则”。
+- 优先级：明确用户需求或已采用约定 > 仓库固定文件 > 机器探测。冲突时报告，不静默选择更严规则。
+- 已批准需求与仓库数据分开：需求决定要不要规则；代码、配置和文档只提供动作范围与风险证据。没有证据的约束写 `advisory_only`。
+
 ### 取已有版本
 
 - 当前已发布策略：`GET /api/projects/:id/policy`。
 - 精确导出的完整 YAML：`GET /api/projects/:id/versions/:n/export?format=yaml`；`n` 从 `GET /api/projects/:id/versions` 获取。
+- `GET /api/seed` 只是仓库 seed candidate，不是全部已发布策略；不要把它当成当前策略或完整基线。
 - 导出是编辑基线；保留原规则、顺序、`activation` 与 `injection`。没有导出就把“需要原稿”作为阻塞项返给用户。
 
 ## 硬规则与建议规则
@@ -52,7 +71,17 @@ description: 为 AMOS 治理控制台编写可导入的全局基线或项目规�
 
 `file_stat`、`file_rename`、`file_perm`、`file_link`、`file_truncate`、`http_request` 等可被 Schema 接受，但当前普通适配器不发出；可作为未来基线，现状下是惰性的。保护当前行为只使用上表 operation，不宣称已拦截其余动作。
 
-以下写成 `advisory_only`：工程规范、设计偏好、Shell/网络/文件内容约束、还没有可执行检查点的约定。建议规则固定 `predicate: null`、`enforcement: advisory`，只进入 narrative 注入。
+以下写成 `advisory_only`：工程规范、设计偏好、Shell/网络/文件内容约束、MCP/进程执行、还没有可执行检查点的约定。建议规则固定 `predicate: null`、`enforcement: advisory`，只进入 narrative 注入。
+
+**硬规则选择流程**（有/无 hard rule 的对照）：
+
+1. 有明确用户需求或已采用的全局约定？没有就只写 `advisory_only`。
+2. 是跨仓库共通的路径/动作？不是就写项目层，并在 `boundary-report.md` 说明。
+3. 是当前真实发出的 operation？不是就写建议。
+4. 能用窄 predicate 表达，并给出一个应命中、一个不应命中的动作？不能就写建议。
+5. 全满足才写 `deny`/`confirm`/`log`；只写用户明确列出或仓库共通约定支持的窄规则，不因探测到工具自动新增。
+
+Shell、联网、MCP、进程执行等当前不可结构化匹配的通道一律优先建议；不要用广泛黑名单宣称覆盖完整。
 
 ## 文档与字段
 
@@ -73,6 +102,7 @@ description: 为 AMOS 治理控制台编写可导入的全局基线或项目规�
 - 文件 target 必须是规范化绝对路径；引擎不做 realpath、不展开 `~`。
 - `file_search`/`file_list` 的 target 是检索/列举的根路径，不是每个结果文件。
 - `*` 不跨 `/`，`**` 跨层级；`**/.netrc` 命中任意层级的 `.netrc`，不命中 `.netrc.bak`。
+- allow 列表（如 `target_outside_glob`）只列探测并模拟验证过的路径；不要用宽泛黑名单假装覆盖完整。
 - `${SESSION_WORKSPACE}` 只用于 `target_glob`/`target_outside_glob` 的项目规则。全局项目自身 workspace 为 `/`，全局规则推荐不用该 token；实际组合/模拟按目标项目 workspace 展开。
 - URL 算子要求绝对 URL；把 `op_in` 放第一条，否则 URL 规则遇到文件 action 会让整次评估 fail-closed。
 - `ttl` 为 `null`、`YYYY-MM-DD` 或精确 UTC ISO 时间；到期不参与评估，发布不会清理或续期。
@@ -80,7 +110,7 @@ description: 为 AMOS 治理控制台编写可导入的全局基线或项目规�
 
 ## 全局与项目
 
-- 全局项目固定 ID `global`，规则继承到所有工作区项目；只写跨仓库可复用的限制，不写某个仓库的目录或绝对路径。
+- 全局项目固定 ID `global`，规则继承到所有工作区项目；只写跨仓库共通的路径/动作，不写某个仓库的目录或绝对路径。项目专属目录、语言、发布流程等写项目层，并在 `boundary-report.md` 说明。
 - 项目候选只保存补充规则。不要复制全局规则；同 ID 不同定义会被拒绝。
 - 生效集合 = 固定基线 ∪ 选中项（全局 + 项目）− 合法排除。项目不能排除固定基线或已激活的全局规则。
 - 全局发布影响所有已发布项目；只提醒人类影响面，不代替发布。
@@ -117,6 +147,10 @@ description: 为 AMOS 治理控制台编写可导入的全局基线或项目规�
 
 ## 输出
 
-- 一份完整 YAML，不拼接多份文档，不留占位符。
-- 列出新增/修改的规则 ID、依据的仓库事实、激活/注入变化、导入与模拟结果、未运行项。
-- 缺少目标、原稿或服务连接时写明缺什么；不用“已生效”“已发布”替代未完成的验证。
+同时交付：
+
+- `inventory.md`：非秘密盘点，含 OS/arch、相关工具与版本、skills 目录名、agent settings 的 hook/plugin/MCP 结构、读过的仓库固定文件；不含 secret 值。
+- `policy.yaml`：一份完整 YAML，不拼接多份文档，不留占位符。
+- `boundary-report.md`：需求到规则的映射、全局/项目边界、hard/advisory 选择理由、正反例结果、未运行/未验证项，以及未读取 secret 的说明。
+
+缺少目标、原稿或服务连接时写明缺什么；不用“已生效”“已发布”替代未完成的验证。
