@@ -4,7 +4,24 @@
 
 ## 安装
 
-### 选项 1：Claude Code（推荐）
+### 选项 1：npm / npx（推荐）
+
+通过 npm 包管理器快速安装：
+
+```bash
+# 使用 npx 一键运行（无需安装）
+npx skills install @g2nnyS/amos-skill
+
+# 或通过 npm 安装到 Claude Code skills 目录
+npm install -g @g2nnyS/amos-skill
+```
+
+或手动复制到 skills 目录：
+```bash
+npm install @g2nnyS/amos-skill ~/.claude/skills/amos-skill
+```
+
+### 选项 2：Claude Code（Git 方式）
 
 1. 克隆或下载本仓库：
    ```bash
@@ -19,7 +36,7 @@
 
 3. 重启 Claude Code，该 skill 会自动注册为可用。
 
-### 选项 2：通过 Skill Tool 直接使用
+### 选项 3：通过 Skill Tool 直接使用
 
 如果你的 Agent 客户端支持 `Skill` 工具，直接告诉 Agent：
 
@@ -27,7 +44,7 @@
 
 Agent 会自动加载本仓库的 `SKILL.md` 作为入口。
 
-### 选项 3：本地编辑
+### 选项 4：本地编辑
 
 无需 Agent 客户端集成，直接：
 
