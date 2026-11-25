@@ -24,9 +24,15 @@ npx skills install @g2nnyS/amos-skill
 npm install -g @g2nnyS/amos-skill
 ```
 
-或手动复制到 skills 目录：
+> **注意**：npm 发布正在进行中。详见 [`PUBLISH.md`](PUBLISH.md)。
+> 如果包尚未发布，使用下面的 Git 方式或 Skill Tool 方式。
+
+或从 GitHub 直接使用（Git 方式）：
 ```bash
-npm install @g2nnyS/amos-skill ~/.claude/skills/amos-skill
+npx skills install https://github.com/g2nnyS/amos-skill.git
+
+# 或使用 SSH
+npx skills install git@github.com:g2nnyS/amos-skill.git
 ```
 
 ### 选项 2：Claude Code（Git 方式）
@@ -390,6 +396,15 @@ npm install -g @g2nnyS/amos-skill
 Or install to skills directory manually:
 ```bash
 npm install @g2nnyS/amos-skill ~/.claude/skills/amos-skill
+
+> **Note**: npm publishing is in progress. See [`PUBLISH.md`](PUBLISH.md). If not yet published, use the Git or Skill Tool methods below.
+
+Or use directly from GitHub (Git method):
+```bash
+npx skills install https://github.com/g2nnyS/amos-skill.git
+
+# Or use SSH
+npx skills install git@github.com:g2nnyS/amos-skill.git
 ```
 
 ### Option 2: Claude Code (Git)
