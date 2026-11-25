@@ -229,9 +229,10 @@ Agents **only**:
 | **examples/global.yaml** | — | Complete global baseline policy example: `format`, `version`, `activation` (explicit `includedRuleIds`), `injection`, 2 canonical rules (deterministic deny + advisory). |
 | **examples/project.yaml** | — | Complete project supplementary policy example: `${SESSION_WORKSPACE}` globs, `injection.routes` with `pathHint`/`add`/`suppress`/`specificity`. |
 | **evals/global-write/** | — | Eval case: author a new global baseline. Contains `case.yaml` (schema_version 1.1, expected_outcome), `prompt.md` (enhanced with real project-amos repo scanning, mapping table, 10+ rules, 2+ rule simulations), and 7 LLM graders (document validity, inventory & secrets, hard-rule scope, project separation, positive/negative matching, injection consistency, hard/advisory selection). Reference: `docs/global-baseline-generation.md`. |
-| **evals/project-ledgers/** | — | Eval case: edit project supplementary rules. Same structure, 3 graders (document validity, scope matching, advisory correctness). |
+| **evals/project-ledgers/** | — | Eval case: author project-level supplementary rules from AGENTS.md. Contains `case.yaml` (schema_version 1.1, expected_outcome with 5-8 rules, `${SESSION_WORKSPACE}` usage), `prompt.md` (project doc scanning, mapping table, workspace-path usage), and 3 LLM graders (document validity, project-specific scope & evidence & separation from baseline, import & simulate verification & project uniqueness). Reference: `docs/project-rules-from-agents.md`. |
 | **docs/global-baseline-generation.md** | — | **Complete step-by-step guide** for authoring a new global baseline from scratch: environment setup, project-amos repo scanning, operation mapping, 10+ rules with evidence, import/simulate verification, boundary report. 8 detailed sections with examples and validation scripts. |
 
+| **docs/project-rules-from-agents.md** | — | **Complete step-by-step guide** for authoring project-level supplementary rules from AGENTS.md: project context extraction, security constraints & engineering conventions, `${SESSION_WORKSPACE}` usage, separation from global baseline, mapping table, policy.yaml authoring, import & simulate verification, boundary report. 8 detailed sections with examples and validation scripts. |
 ---
 
 ## Runtime & Tooling Preferences

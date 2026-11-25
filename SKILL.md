@@ -9,6 +9,10 @@ description: 为 AMOS 治理控制台编写可导入的全局基线或项目规�
 
 从[全局示例](examples/global.yaml)或[项目示例](examples/project.yaml)选一个起点，不要拼接。[编写参考](references/authoring.md)列出算子参数、在线模拟和离线校验命令；服务可用时，以 `GET /api/schema` 返回的规则表契约为准。
 
+**新建全局基线？** 参考[从零生成全局基线的完整步骤](docs/global-baseline-generation.md)，包括环境盘点、仓库扫描、映射表、导入与模拟验证的完整例子。
+
+**生成项目规则？** 参考[从项目 AGENTS.md 生成项目级规则](docs/project-rules-from-agents.md)，包括项目文档扫描、`${SESSION_WORKSPACE}` 使用、与全局基线的分离。
+
 ## 开始前确认
 
 1. **目标**：内置 `global`，还是某个工作区项目 ID。
