@@ -1,0 +1,43 @@
+{
+  "name": "@g2nnyS/amos-skill",
+  "version": "1.0.0",
+  "description": "AMOS governance rule authoring skill for AI agents. Comprehensive guides for generating global baselines and project-level supplementary rules with real repository scanning and workspace-aware path abstraction.",
+  "keywords": [
+    "amos",
+    "governance",
+    "rules",
+    "policy",
+    "skill",
+    "agent",
+    "yaml"
+  ],
+  "author": "g2nnyS",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/g2nnyS/amos-skill.git"
+  },
+  "homepage": "https://github.com/g2nnyS/amos-skill#readme",
+  "bugs": {
+    "url": "https://github.com/g2nnyS/amos-skill/issues"
+  },
+  "files": [
+    "SKILL.md",
+    "README.md",
+    "AGENTS.md",
+    "docs/",
+    "examples/",
+    "references/",
+    "evals/",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./SKILL.md"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+.git
+.gitignore
+node_modules
+npm-debug.log
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode
+.idea
+.env*
+
+# 评估案例中的 fixture 不需要发布
+evals/*/fixture/
+
+# 临时文件
+*.tmp
+*.bak
