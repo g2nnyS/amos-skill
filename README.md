@@ -1,5 +1,13 @@
 # amos-skill
 
+[中文](#中文) | [English](#english)
+
+---
+
+<a name="中文"></a>
+
+# 中文
+
 给 Agent 用的 [AMOS](https://github.com/g2nnyS/project-amos) 规则编写指南。产物是一份可导入控制台的完整 YAML 草案：全局基线写给内置 `global` 项目；项目补充规则写给实际工作区。审批和发布由人完成。
 
 ## 安装
@@ -16,9 +24,15 @@ npx skills install @g2nnyS/amos-skill
 npm install -g @g2nnyS/amos-skill
 ```
 
-或手动复制到 skills 目录：
+> **注意**：npm 发布正在进行中。详见 [`PUBLISH.md`](PUBLISH.md)。
+> 如果包尚未发布，使用下面的 Git 方式或 Skill Tool 方式。
+
+或从 GitHub 直接使用（Git 方式）：
 ```bash
-npm install @g2nnyS/amos-skill ~/.claude/skills/amos-skill
+npx skills install https://github.com/g2nnyS/amos-skill.git
+
+# 或使用 SSH
+npx skills install git@github.com:g2nnyS/amos-skill.git
 ```
 
 ### 选项 2：Claude Code（Git 方式）
@@ -155,40 +169,24 @@ export PROJECT_ID="global"
 
 **在线验证**（需要运行的 AMOS 服务）：
 ```bash
-# 见 docs/global-baseline-generation.md §5 或 project-rules-from-agents.md §5
-# 使用 Node.js 脚本运行完整导入 → 模拟流程
 export AMOS_PORT=3000
 export AMOS_AGENT_TOKEN="<token>"
-export PROJECT_ID="global"  # 或具体项目 UUID
+export PROJECT_ID="global"
 export DRAFT="./policy.yaml"
 
-# 导入（必须先做）
 node --input-type=module << 'EOF'
 import fs from "fs";
 const yaml = fs.readFileSync(process.env.DRAFT, "utf-8");
 const resp = await fetch(
   `http://127.0.0.1:${process.env.AMOS_PORT}/api/projects/${process.env.PROJECT_ID}/import`,
-  {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.AMOS_AGENT_TOKEN}`,
-      "Content-Type": "text/yaml"
-    },
-    body: yaml
-  }
+  { method: "POST", headers: { "Authorization": `Bearer ${process.env.AMOS_AGENT_TOKEN}`, "Content-Type": "text/yaml" }, body: yaml }
 );
-const result = await resp.json();
-console.log(JSON.stringify(result, null, 2));
+console.log(JSON.stringify(await resp.json(), null, 2));
 EOF
-
-# 检查返回的 valid: true 和 candidate 对象
-# 然后用 candidate 运行 /simulate 测试
 ```
 
-**离线验证**（无需在线服务）：
+**离线验证**（无需在线服务，需要 AMOS 检出）：
 ```bash
-# 见 docs/global-baseline-generation.md §5 或 project-rules-from-agents.md §5
-# 需要 AMOS 检出已构建
 export AMOS_ROOT="/path/to/project-amos"
 cd $AMOS_ROOT && npm ci && npm run build
 
@@ -201,7 +199,6 @@ const yaml = fs.readFileSync("./policy.yaml", "utf-8");
 const doc = YAML.load(yaml);
 const parsed = parsePolicyDocument(doc);
 console.log("Parsed rules:", parsed.rules.map(r => r.id));
-// 若无异常则通过
 EOF
 ```
 
@@ -371,3 +368,377 @@ EOF
 ## 许可
 
 本 Skill 是 [project-amos](https://github.com/g2nnyS/project-amos) 的配套指南包。
+
+遵循 MIT License（见 [LICENSE](LICENSE)）。
+
+---
+
+<a name="english"></a>
+
+# English
+
+AI Agent skill for authoring [AMOS](https://github.com/g2nnyS/project-amos) governance rules. The output is a complete, importable YAML policy draft: global baselines are written to the built-in `global` project; project-level supplementary rules apply to specific workspaces. Approval and publication are always human-only operations.
+
+## Installation
+
+### Option 1: npm / npx (Recommended)
+
+Quick installation via npm package manager:
+
+```bash
+# One-command npx installation (no local install needed)
+npx skills install @g2nnyS/amos-skill
+
+# Or install globally
+npm install -g @g2nnyS/amos-skill
+```
+
+Or install to skills directory manually:
+```bash
+npm install @g2nnyS/amos-skill ~/.claude/skills/amos-skill
+
+> **Note**: npm publishing is in progress. See [`PUBLISH.md`](PUBLISH.md). If not yet published, use the Git or Skill Tool methods below.
+
+Or use directly from GitHub (Git method):
+```bash
+npx skills install https://github.com/g2nnyS/amos-skill.git
+
+# Or use SSH
+npx skills install git@github.com:g2nnyS/amos-skill.git
+```
+
+### Option 2: Claude Code (Git)
+
+1. Clone or download this repository:
+   ```bash
+   git clone https://github.com/g2nnyS/amos-skill.git
+   ```
+
+2. Place the `amos-skill` directory in Claude Code's skills folder:
+   ```bash
+   mkdir -p ~/.claude/skills
+   cp -r amos-skill ~/.claude/skills/
+   ```
+
+3. Restart Claude Code—the skill will auto-register.
+
+### Option 3: Skill Tool Direct Use
+
+If your Agent client supports the `Skill` tool, tell the Agent directly:
+
+> Use amos-skill to author AMOS rules. Start by reading `SKILL.md`, then follow the guides to generate `policy.yaml`.
+
+The Agent will automatically load `SKILL.md` as the entry point.
+
+### Option 4: Local Editing
+
+No Agent client required:
+
+1. Clone this repository locally
+2. Read [`SKILL.md`](SKILL.md) to understand the workflow
+3. Follow [`docs/global-baseline-generation.md`](docs/global-baseline-generation.md) or [`docs/project-rules-from-agents.md`](docs/project-rules-from-agents.md) to author rules manually
+4. Use Node.js validation scripts to verify YAML (see below)
+
+---
+
+## Quick Start
+
+### Task 1: Generate Global Baseline (10+ rules)
+
+**Use when**: You need to author cross-repository governance rules for AMOS.
+
+**Inputs**:
+- project-amos repository checkout (or running AMOS service)
+- Local environment info
+
+**Outputs**:
+- `policy.yaml` — complete, importable rule document
+- `boundary-report.md` — rule justifications, verification results, gaps
+- `inventory.md` — environment inventory (optional)
+
+**Steps**:
+```bash
+# 1. Tell the Agent to generate a global baseline
+# "Author a new global baseline policy for AMOS.
+#  Reference docs/global-baseline-generation.md for complete guidance.
+#  Target 10+ rules mixing hard rules and advisory rules,
+#  each with complete source attribution or null.
+#  Scan project-amos repository for real operation mappings and governance conventions.
+#  Generate and validate imports only; do not submit proposals."
+
+# 2. Or generate manually, then verify
+export DRAFT="./policy.yaml"
+export AMOS_PORT=3000
+export AMOS_AGENT_TOKEN="<token>"
+export PROJECT_ID="global"
+
+# Run Node.js validation script from docs/
+```
+
+See [`docs/global-baseline-generation.md`](docs/global-baseline-generation.md) (371 lines: environment setup, repo scanning, mapping tables, import validation, simulation testing, gap analysis).
+
+---
+
+### Task 2: Generate Project-Level Rules from AGENTS.md (5-8 rules)
+
+**Use when**: You need project-specific supplementary rules based on a project's AGENTS.md and contribution guidelines.
+
+**Inputs**:
+- Target project UUID or `${SESSION_WORKSPACE}` placeholder
+- Project AGENTS.md, CONTRIBUTING.md, README
+- Published project policy (if editing existing rules)
+
+**Outputs**:
+- `policy.yaml` — complete, importable project rules
+- `project-boundary-report.md` — division of labor with baseline, `${SESSION_WORKSPACE}` expansion verification, gaps
+- `project-context.md` — AGENTS.md extraction summary (optional)
+
+**Steps**:
+```bash
+# 1. Tell the Agent to generate project rules
+# "Author supplementary rules for project UUID=<uuid>.
+#  Scan the project's AGENTS.md, CONTRIBUTING.md, README documents.
+#  Reference docs/project-rules-from-agents.md for complete guidance.
+#  Generate 5-8 rules (3-5 hard, 2-3 advisory),
+#  using ${SESSION_WORKSPACE} for workspace-specific paths.
+#  Ensure no ID conflicts with global rules.
+#  Generate and validate imports only; do not submit proposals."
+
+# 2. Or generate manually, then verify
+```
+
+See [`docs/project-rules-from-agents.md`](docs/project-rules-from-agents.md) (394 lines: project doc scanning, `${SESSION_WORKSPACE}` usage, baseline separation, import validation, simulation testing).
+
+---
+
+## Full Workflow
+
+### 1. Read Entry Documentation
+
+| File | Purpose |
+|------|---------|
+| [`SKILL.md`](SKILL.md) | **Required reading.** Complete workflow, constraints, 14 required fields, 7 operators, global vs. project model, human approval boundary |
+| [`references/authoring.md`](references/authoring.md) | Operator reference, validation scripts, delivery checklist |
+| [`examples/global.yaml`](examples/global.yaml) | Global baseline template |
+| [`examples/project.yaml`](examples/project.yaml) | Project rules template |
+
+### 2. Choose Your Guide
+
+- **Generating a global baseline?** → [`docs/global-baseline-generation.md`](docs/global-baseline-generation.md)
+- **Generating project rules?** → [`docs/project-rules-from-agents.md`](docs/project-rules-from-agents.md)
+
+### 3. Author Rules
+
+Follow the guide's steps:
+1. Scan repository docs, extract conventions
+2. Build mapping table (source → operation → verdict → type)
+3. Write YAML (all 14 fields required)
+4. Validate import (`POST /import` or offline `parsePolicyDocument`)
+5. Test simulation (≥1-2 rules, each with positive + negative cases)
+6. Write boundary report (summary, results, gaps)
+
+### 4. Verify and Deliver
+
+**Online verification** (requires running AMOS service):
+```bash
+export AMOS_PORT=3000
+export AMOS_AGENT_TOKEN="<token>"
+export PROJECT_ID="global"
+export DRAFT="./policy.yaml"
+
+node --input-type=module << 'EOF'
+import fs from "fs";
+const yaml = fs.readFileSync(process.env.DRAFT, "utf-8");
+const resp = await fetch(
+  `http://127.0.0.1:${process.env.AMOS_PORT}/api/projects/${process.env.PROJECT_ID}/import`,
+  { method: "POST", headers: { "Authorization": `Bearer ${process.env.AMOS_AGENT_TOKEN}`, "Content-Type": "text/yaml" }, body: yaml }
+);
+console.log(JSON.stringify(await resp.json(), null, 2));
+EOF
+```
+
+**Offline verification** (no service needed; requires AMOS checkout built):
+```bash
+export AMOS_ROOT="/path/to/project-amos"
+cd $AMOS_ROOT && npm ci && npm run build
+
+node --input-type=module << 'EOF'
+import { parsePolicyDocument } from "$AMOS_ROOT/dist/control-plane/document.js";
+import YAML from "js-yaml";
+import fs from "fs";
+
+const yaml = fs.readFileSync("./policy.yaml", "utf-8");
+const doc = YAML.load(yaml);
+const parsed = parsePolicyDocument(doc);
+console.log("Parsed rules:", parsed.rules.map(r => r.id));
+EOF
+```
+
+**Delivery checklist**:
+- ✅ policy.yaml (complete YAML, all 14 fields, no placeholders)
+- ✅ boundary-report.md (rule summary, results, gaps)
+- ✅ source docs (inventory.md or project-context.md)
+- ✅ verification evidence (import & simulation output)
+
+---
+
+## Core Concepts
+
+### Hard Rules vs. Advisory Rules
+
+| Type | predicate | enforcement | Use when |
+|------|-----------|-------------|----------|
+| **Hard rule** | non-empty array | `runtime`/`ci`/`server` | Deterministic operations, verifiable, need interception or confirmation |
+| **Advisory rule** | `null` | `advisory` | Engineering conventions, workflow suggestions, no executable checkpoint yet |
+
+### Global vs. Project
+
+| Dimension | Global Baseline | Project Rules |
+|-----------|-----------------|---------------|
+| **Project ID** | `global` | Specific UUID or `${SESSION_WORKSPACE}` |
+| **Paths** | Universal globs (`/.git/**`) | `${SESSION_WORKSPACE}/...` |
+| **Source** | project-amos repo + local env | Target project's AGENTS.md |
+| **Rule count** | 10+ rules | 5-8 rules |
+| **Scope** | Cross-repo reusable | Project-specific |
+| **Separation** | Independent | No ID conflicts with global rules |
+
+### ${SESSION_WORKSPACE}
+
+Workspace path abstraction (project rules only):
+- At authoring time: stays portable (e.g., `${SESSION_WORKSPACE}/data/**`)
+- At verification time: expands to target project's actual workspace
+- **Cannot be used in global rules** (global workspace is `/`)
+
+---
+
+## Full Examples
+
+### Example 1: A Rule in Global Baseline
+
+```yaml
+- id: global-secret-files
+  dimension: "confidentiality"
+  level: "critical"
+  expressivity: "audit_and_enforce"
+  
+  predicate:
+    - op: op_in
+      args:
+        operations: ["file_write"]
+    - op: target_glob
+      args:
+        patterns: ["/.env*", "/.netrc", "/**/*.key"]
+  
+  narrative: |
+    Prohibit writing to secret storage files (keys, tokens, connection strings).
+    All secrets must be injected via secure environment variables or a secrets manager.
+  
+  on_hit: "confirm"
+  scope: "operation:file_write target:secrets"
+  ttl: null
+  owner: "governance-team"
+  
+  source:
+    repo: "primary"
+    rev: "HEAD"
+    path: "CONTRIBUTING.md"
+    section: "Secret Management"
+    lines: [42, 48]
+    quote: "All secrets must be stored in .env files (never committed) or injected at runtime via secure environment variables."
+  
+  probe: "fs_writeable"
+  policy_class: "mandatory"
+  enforcement: "confirm"
+```
+
+### Example 2: Project Rule Using ${SESSION_WORKSPACE}
+
+```yaml
+- id: project-ledger-write
+  dimension: "integrity"
+  level: "critical"
+  expressivity: "audit_and_enforce"
+  
+  predicate:
+    - op: op_in
+      args:
+        operations: ["file_write"]
+    - op: target_glob
+      args:
+        patterns: ["${SESSION_WORKSPACE}/ops/ledgers/**"]
+  
+  narrative: |
+    Ledger files are project-critical data stores; any direct modification requires human confirmation.
+  
+  on_hit: "confirm"
+  scope: "operation:file_write target:ledgers"
+  ttl: null
+  owner: "project-maintainers"
+  
+  source:
+    repo: "primary"
+    rev: "HEAD"
+    path: "AGENTS.md"
+    section: "Key Directories"
+    lines: [15, 20]
+    quote: "ops/ledgers/ — project-critical account ledger; write-confirmed in dev"
+  
+  probe: "fs_writeable"
+  policy_class: "mandatory"
+  enforcement: "confirm"
+```
+
+At simulation time, `${SESSION_WORKSPACE}` expands to the actual path (e.g., `/home/user/my-project-workspace`).
+
+---
+
+## FAQ
+
+### Q: Can I directly use templates to overwrite existing policies?
+
+**No.** Templates are starting points. If a policy exists, export it with `GET /api/projects/:id/versions/:n/export?format=yaml`, then edit.
+
+### Q: How do I ensure no ID conflicts with global rules?
+
+Check global rule IDs in `evals/global-write/` eval results, or query `GET /api/projects/global/policy` on the AMOS console. For project rules, avoid `global-*` prefix; use `project-*` or project-name prefix instead.
+
+### Q: Can I concatenate multiple YAML files?
+
+**No.** Each policy.yaml must be a single, complete document. For combining, use `activation.includedRuleIds` and `injection.baselineRuleIds` within one file.
+
+### Q: What if I don't have a running AMOS service?
+
+Use offline validation scripts (requires built AMOS checkout). See "Offline Verification" in `docs/global-baseline-generation.md` or `docs/project-rules-from-agents.md`.
+
+### Q: How do I handle secrets?
+
+**Never** include secrets in `source.quote`. If you must reference them (e.g., "key file `.env`"), use names or keywords—not values. Never export secret values in `inventory.md` either.
+
+### Q: Can I submit proposals?
+
+**No.** Agents can only draft, import, validate, and simulate. Approval and publication are human-only (`POST /api/proposals/:id/decision` requires human action).
+
+---
+
+## Resources
+
+| Resource | Description |
+|----------|-------------|
+| [`SKILL.md`](SKILL.md) | Complete workflow & constraints (entry point) |
+| [`AGENTS.md`](AGENTS.md) | Project guidelines & file reference |
+| [`docs/global-baseline-generation.md`](docs/global-baseline-generation.md) | 8-step guide for generating global baseline from scratch |
+| [`docs/project-rules-from-agents.md`](docs/project-rules-from-agents.md) | 8-step guide for generating project rules from AGENTS.md |
+| [`references/authoring.md`](references/authoring.md) | Operator reference, validation scripts, checklist |
+| [`examples/global.yaml`](examples/global.yaml) | Global baseline template |
+| [`examples/project.yaml`](examples/project.yaml) | Project rules template |
+| [`evals/global-write/`](evals/global-write/) | Global baseline evaluation case & graders |
+| [`evals/project-ledgers/`](evals/project-ledgers/) | Project rules evaluation case & graders |
+| [AMOS Repository](https://github.com/g2nnyS/project-amos) | Official AMOS control plane implementation |
+
+---
+
+## License
+
+This Skill is a companion package to [project-amos](https://github.com/g2nnyS/project-amos).
+
+Licensed under MIT (see [LICENSE](LICENSE)).
