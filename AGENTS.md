@@ -234,6 +234,7 @@ Agents **only**:
 
 | **docs/project-rules-from-agents.md** | — | **Complete step-by-step guide** for authoring project-level supplementary rules from AGENTS.md: project context extraction, security constraints & engineering conventions, `${SESSION_WORKSPACE}` usage, separation from global baseline, mapping table, policy.yaml authoring, import & simulate verification, boundary report. 8 detailed sections with examples and validation scripts. |
 | **docs/multi-agent-governance.md** | — | **Advanced governance for multi-agent systems**: distinguishing benign operations from malicious ones using context, operation sequences, and trust models. Covers layered rules (hard-deny, confirmation, advisory), real-world scenarios, pattern analysis, inter-agent trust, and integration with AMOS. 9 sections with practical examples and future roadmap. |
+| **docs/mcp-tool-governance.md** | — | **MCP tool governance for Agent systems**: comprehensive guide for securing Agent access to external tools via MCP. Covers tool classification (read/write/execute/communication), parameter safety & injection prevention, tool chain analysis for data exfiltration detection, permission models, and anomaly detection patterns. 9 sections with real-world attack scenarios, permission frameworks, and integration examples. |
 ---
 
 ## Runtime & Tooling Preferences
