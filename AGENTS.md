@@ -233,6 +233,7 @@ Agents **only**:
 | **docs/global-baseline-generation.md** | — | **Complete step-by-step guide** for authoring a new global baseline from scratch: environment setup, project-amos repo scanning, operation mapping, 10+ rules with evidence, import/simulate verification, boundary report. 8 detailed sections with examples and validation scripts. |
 
 | **docs/project-rules-from-agents.md** | — | **Complete step-by-step guide** for authoring project-level supplementary rules from AGENTS.md: project context extraction, security constraints & engineering conventions, `${SESSION_WORKSPACE}` usage, separation from global baseline, mapping table, policy.yaml authoring, import & simulate verification, boundary report. 8 detailed sections with examples and validation scripts. |
+| **docs/multi-agent-governance.md** | — | **Advanced governance for multi-agent systems**: distinguishing benign operations from malicious ones using context, operation sequences, and trust models. Covers layered rules (hard-deny, confirmation, advisory), real-world scenarios, pattern analysis, inter-agent trust, and integration with AMOS. 9 sections with practical examples and future roadmap. |
 ---
 
 ## Runtime & Tooling Preferences

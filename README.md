@@ -361,7 +361,7 @@ EOF
 | [`examples/project.yaml`](examples/project.yaml) | 项目规则模板 |
 | [`evals/global-write/`](evals/global-write/) | 全局基线评估案例与评分标准 |
 | [`evals/project-ledgers/`](evals/project-ledgers/) | 项目规则评估案例与评分标准 |
-| [AMOS 仓库](https://github.com/g2nnyS/project-amos) | 官方 AMOS 控制平面实现 |
+| [`docs/multi-agent-governance.md`](docs/multi-agent-governance.md) | 多智能体系统治理指南：区分善意与恶意行为、分层规则模型、操作序列分析、Agent 信任模型 |
 
 ---
 
@@ -733,7 +733,7 @@ Use offline validation scripts (requires built AMOS checkout). See "Offline Veri
 | [`examples/project.yaml`](examples/project.yaml) | Project rules template |
 | [`evals/global-write/`](evals/global-write/) | Global baseline evaluation case & graders |
 | [`evals/project-ledgers/`](evals/project-ledgers/) | Project rules evaluation case & graders |
-| [AMOS Repository](https://github.com/g2nnyS/project-amos) | Official AMOS control plane implementation |
+| [`docs/multi-agent-governance.md`](docs/multi-agent-governance.md) | Multi-agent governance guide: distinguishing benign from malicious behavior, layered rule models, operation sequence analysis, inter-agent trust |
 
 ---
 

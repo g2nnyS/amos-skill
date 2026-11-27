@@ -13,6 +13,8 @@ description: 为 AMOS 治理控制台编写可导入的全局基线或项目规�
 
 **生成项目规则？** 参考[从项目 AGENTS.md 生成项目级规则](docs/project-rules-from-agents.md)，包括项目文档扫描、`${SESSION_WORKSPACE}` 使用、与全局基线的分离。
 
+**多智能体系统中的治理？** 参考[多智能体系统治理指南](docs/multi-agent-governance.md)，理解如何在多 Agent 协作中区分善意与恶意行为、分层规则模型、操作序列分析、Agent 身份与信任。
+
 ## 开始前确认
 
 1. **目标**：内置 `global`，还是某个工作区项目 ID。
