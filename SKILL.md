@@ -15,6 +15,8 @@ description: 为 AMOS 治理控制台编写可导入的全局基线或项目规�
 
 **多智能体系统中的治理？** 参考[多智能体系统治理指南](docs/multi-agent-governance.md)，理解如何在多 Agent 协作中区分善意与恶意行为、分层规则模型、操作序列分析、Agent 身份与信任。
 
+**MCP 工具调用治理？** 参考[MCP 工具调用治理指南](docs/mcp-tool-governance.md)，管理 Agent 通过 MCP 接口调用外部工具时的权限、参数安全、工具链分析和异常检测。
+
 ## 开始前确认
 
 1. **目标**：内置 `global`，还是某个工作区项目 ID。
